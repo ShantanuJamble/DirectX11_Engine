@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DXCore" Collapsed="true">
+    <Position X="3.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYCiCECAAcAA4SAUAEgIEgAARAEAACKJgMCAAACAQI=</HashCode>
+      <FileName>headers\DXCore.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ISimpleShader" Collapsed="true">
+    <Position X="6" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QABUAgADAgQAQkgJCCBAAEggEIBAQSIBBAAAAEQABAk=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleVertexShader" Collapsed="true">
+    <Position X="2.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAQAAAAAEAAgAAAAAAAAAAEAAADAAAAQEACACE=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimplePixelShader" Collapsed="true">
+    <Position X="7.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAEAAgAAEAAAAAAAAABABAAAAAEAAAAE=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleDomainShader" Collapsed="true">
+    <Position X="11.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAoAAAAAAAEAAgAAAAAAIAAAAAAABAAAAAEAAAAE=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleHullShader" Collapsed="true">
+    <Position X="0.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAEAAoAAAAAAAAAAAAAABAAAAAkAAAAE=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleGeometryShader" Collapsed="true">
+    <Position X="5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAgAAAAAAAEAAhAAAQUACABgAAAABAAAAgEAAAAE=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleComputeShader" Collapsed="true">
+    <Position X="9.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAgAIAQAAAUAAgAABAQEAAAAABAARAAAAAEAEIAE=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="SimpleShaderVariable">
+    <Position X="14.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAABAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SimpleConstantBuffer">
+    <Position X="14.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAgAAAAAAAAAYAgAAAAAAAAQQAAAAAAAA=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SimpleSRV">
+    <Position X="16.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SimpleSampler">
+    <Position X="16" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>headers\SimpleShader.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Vertex">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>headers\Vertex.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
