@@ -24,7 +24,7 @@ Game::Game(HINSTANCE hInstance)
 	vertexShader = 0;
 	pixelShader = 0;
 	//Initializes the Vector of the meshes
-	meshCount = 3;
+	meshCount = 4;
 	mesh = new Mesh *[meshCount];
 
 #if defined(DEBUG) || defined(_DEBUG)
@@ -146,7 +146,8 @@ void Game::CreateBasicGeometry()
 	float x2 = -1.5f, y2 = 0.0f;
 	float x3 = -2.5f, y3 =0.0f;
 	float incr = 0.0f;
-	for (int index = 0; index < meshCount; index++) 
+	int index = 0;
+	for (index = 0; index < 3; index++) 
 	{
 		mesh[index] = new Mesh();
 		// Set up the vertices of the triangle we would like to draw
@@ -156,7 +157,7 @@ void Game::CreateBasicGeometry()
 		{
 			{ XMFLOAT3(x1 + incr, y1 , +0.0f), red },
 			{ XMFLOAT3(x2 + incr, y2 , +0.0f), blue },
-			{ XMFLOAT3(x3 + incr, y3 , +0.0f), blue },
+			{ XMFLOAT3(x3 + incr, y3 , +0.0f), green },
 		};
 
 		// Set up the indices, which tell us which vertices to use and in which order
@@ -174,6 +175,26 @@ void Game::CreateBasicGeometry()
 		mesh[index]->CreateBuffer(device);
 		incr += 2.0f;
 	}
+
+	//Creating a hexagon
+	Vertex vertices[] = {
+			{ XMFLOAT3(-0.5f,-0.5f , +0.0f), red },
+			{ XMFLOAT3( 0.5f,-0.5f , +0.0f), blue },
+			{ XMFLOAT3( 1.0f,-1.0f , +0.0f), green },
+			{ XMFLOAT3( 0.5f,-1.5f , +0.0f), red },
+			{ XMFLOAT3(-0.5f,-1.5f , +0.0f), blue },
+			{ XMFLOAT3(-1.0f,-1.0f , +0.0f), green },
+	};
+	int indices[] = { 0,1,3,1,2,3,0,3,4,0,4,5 };
+	mesh[index] = new Mesh();
+	mesh[index]->SetVertices(vertices, 6);
+	mesh[index]->SetIndices(indices, 12);
+
+	mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_VERTEX_BUFFER);
+	mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_INDEX_BUFFER);
+
+	mesh[index]->CreateBuffer(device);
+	
 }
 
 
