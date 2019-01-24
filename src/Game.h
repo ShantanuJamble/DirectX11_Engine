@@ -1,8 +1,10 @@
 #pragma once
+#include <DirectXMath.h>
+#include <vector>
 
 #include "DXCore.h"
 #include "SimpleShader.h"
-#include <DirectXMath.h>
+#include "Mesh.h"
 
 class Game 
 	: public DXCore
@@ -31,10 +33,6 @@ private:
 	void CreateMatrices();
 	void CreateBasicGeometry();
 
-	// Buffers to hold actual geometry data
-	ID3D11Buffer* vertexBuffer;
-	ID3D11Buffer* indexBuffer;
-
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
@@ -47,5 +45,9 @@ private:
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;
+
+	//Stores the VertexBuffer and Indices data for the mesh to be rendered.
+	Mesh **mesh;
+	UINT meshCount = 0;
 };
 

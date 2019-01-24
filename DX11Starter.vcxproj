@@ -152,6 +152,7 @@
     <ClCompile Include="src\DXCore.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\SimpleShader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +169,7 @@
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\SimpleShader.h" />
     <ClInclude Include="src\Vertex.h" />
+    <ClInclude Include="src\Mesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
