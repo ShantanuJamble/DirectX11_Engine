@@ -32,7 +32,7 @@ Game::Game(HINSTANCE hInstance)
 	CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
 #endif
-	
+
 }
 
 // --------------------------------------------------------
@@ -46,10 +46,10 @@ Game::~Game()
 	// will clean up their own internal DirectX stuff
 	for (int index = 0; index < meshCount; index++)
 		delete mesh[index];
-	delete [] mesh;
+	delete[] mesh;
 	delete vertexShader;
 	delete pixelShader;
-	
+
 }
 
 // --------------------------------------------------------
@@ -144,10 +144,10 @@ void Game::CreateBasicGeometry()
 
 	float x1 = -1.5f, y1 = 1.5f;
 	float x2 = -1.5f, y2 = 0.0f;
-	float x3 = -2.5f, y3 =0.0f;
+	float x3 = -2.5f, y3 = 0.0f;
 	float incr = 0.0f;
 	int index = 0;
-	for (index = 0; index < 3; index++) 
+	for (index = 0; index < 3; index++)
 	{
 		mesh[index] = new Mesh();
 		// Set up the vertices of the triangle we would like to draw
@@ -178,12 +178,14 @@ void Game::CreateBasicGeometry()
 
 	//Creating a hexagon
 	Vertex vertices[] = {
-			{ XMFLOAT3(-0.5f,-0.5f , +0.0f), red },
-			{ XMFLOAT3( 0.5f,-0.5f , +0.0f), blue },
-			{ XMFLOAT3( 1.0f,-1.0f , +0.0f), green },
-			{ XMFLOAT3( 0.5f,-1.5f , +0.0f), red },
-			{ XMFLOAT3(-0.5f,-1.5f , +0.0f), blue },
-			{ XMFLOAT3(-1.0f,-1.0f , +0.0f), green },
+			{ XMFLOAT3(1.0f,1.0f , +0.0f), red },
+			{ XMFLOAT3(1.5f,1.0f , +0.0f), blue },
+			
+			{ XMFLOAT3(1.5f,0.5f , +0.0f), red },
+			
+			{ XMFLOAT3(1.5f,0.0f , +0.0f), blue },
+			{ XMFLOAT3(1.0f,0.0f , +0.0f), green },
+			{ XMFLOAT3(0.5f,0.5f , +0.0f), green },
 	};
 	int indices[] = { 0,1,3,1,2,3,0,3,4,0,4,5 };
 	mesh[index] = new Mesh();
@@ -194,7 +196,7 @@ void Game::CreateBasicGeometry()
 	mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_INDEX_BUFFER);
 
 	mesh[index]->CreateBuffer(device);
-	
+
 }
 
 
@@ -271,21 +273,22 @@ void Game::Draw(float deltaTime, float totalTime)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	ID3D11Buffer * vertexBufferTmp;
-	for (int index = 0; index < meshCount;index++) {
-	vertexBufferTmp = mesh[index]->GetVertexBuffer();
-	context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
-	context->IASetIndexBuffer(mesh[index]->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	for (int index = 0; index < meshCount; index++) {
+		vertexBufferTmp = mesh[index]->GetVertexBuffer();
+		context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
+		context->IASetIndexBuffer(mesh[index]->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
-	// Finally do the actual drawing
-	//  - Do this ONCE PER OBJECT you intend to draw
-	//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-	//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-	//     vertices in the currently set VERTEX BUFFER
-	//UINT indexCount = 3;
-	context->DrawIndexed(
-		mesh[index]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-		0,     // Offset to the first index we want to use
-		0);    // Offset to add to each index when looking up vertices
+		// Finally do the actual drawing
+		//  - Do this ONCE PER OBJECT you intend to draw
+		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+		//     vertices in the currently set VERTEX BUFFER
+		//UINT indexCount = 3;
+
+		context->DrawIndexed(
+			mesh[index]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
 	}
 
 
@@ -337,7 +340,7 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 {
 	// Add any custom code here...
-
+ 
 	// Save the previous mouse position, so we have it for the future
 	prevMousePos.x = x;
 	prevMousePos.y = y;

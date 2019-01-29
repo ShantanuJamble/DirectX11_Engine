@@ -166,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DXCore.h" />
+    <ClInclude Include="src\ErrorHandler.h" />
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\SimpleShader.h" />
     <ClInclude Include="src\Vertex.h" />

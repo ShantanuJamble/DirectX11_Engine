@@ -1,7 +1,7 @@
 
 #include <Windows.h>
 #include "Game.h"
-
+#include "ErrorHandler.h"
 // --------------------------------------------------------
 // Entry point for a graphical (non-console) Windows application
 // --------------------------------------------------------
@@ -48,20 +48,23 @@ int WINAPI WinMain(
 	// the app handle we got from WinMain
 	Game dxGame(hInstance);
 
-	// Result variable for function calls below
-	HRESULT hr = S_OK;
+	//// Result variable for function calls below
+	//HRESULT hr = S_OK;
 
-	// Attempt to create the window for our program, and
-	// exit early if something failed
-	hr = dxGame.InitWindow();
-	if(FAILED(hr)) return hr;
+	//// Attempt to create the window for our program, and
+	//// exit early if something failed
+	//hr = dxGame.InitWindow();
+	//if(FAILED(hr)) return hr;
 
+	DXCall(dxGame.InitWindow());
 	// Attempt to initialize DirectX, and exit
 	// early if something failed
-	hr = dxGame.InitDirectX();
-	if(FAILED(hr)) return hr;
+	DXCall(dxGame.InitDirectX());
+
 
 	// Begin the message and game loop, and then return
 	// whatever we get back once the game loop is over
+
+	///TODO: Can't use the DXCall here as we are returning a value here. Need to fix MACRO for that.
 	return dxGame.Run();
 }

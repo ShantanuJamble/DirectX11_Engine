@@ -1,5 +1,5 @@
 #include "SimpleShader.h"
-
+#include "ErrorHandler.h"
 ///////////////////////////////////////////////////////////////////////////////
 // ------ BASE SIMPLE SHADER --------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
@@ -73,12 +73,7 @@ void ISimpleShader::CleanUp()
 bool ISimpleShader::LoadShaderFile(LPCWSTR shaderFile)
 {
 	// Load the shader to a blob and ensure it worked
-	HRESULT hr = D3DReadFileToBlob(shaderFile, &shaderBlob);
-	if (hr != S_OK)
-	{
-		return false;
-	}
-
+	DXCall(D3DReadFileToBlob(shaderFile, &shaderBlob))
 	// Create the shader - Calls an overloaded version of this abstract
 	// method in the appropriate child class
 	shaderValid = CreateShader(shaderBlob);
@@ -90,12 +85,12 @@ bool ISimpleShader::LoadShaderFile(LPCWSTR shaderFile)
 	// Set up shader reflection to get information about
 	// this shader and its variables,  buffers, etc.
 	ID3D11ShaderReflection* refl;
-	D3DReflect(
+	DXCall(D3DReflect(
 		shaderBlob->GetBufferPointer(),
 		shaderBlob->GetBufferSize(),
 		IID_ID3D11ShaderReflection,
-		(void**)&refl);
-	
+		(void**)&refl)
+	);
 	// Get the description of the shader
 	D3D11_SHADER_DESC shaderDesc;
 	refl->GetDesc(&shaderDesc);
