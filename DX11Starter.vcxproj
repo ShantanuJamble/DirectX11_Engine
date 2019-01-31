@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -70,20 +70,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(SolutionDir)DX11Starter\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)DX11Starter\bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -150,7 +150,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DXCore.cpp" />
+    <ClCompile Include="src\ErrorHandler.cpp" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\SimpleShader.cpp" />
@@ -168,6 +170,7 @@
     <ClInclude Include="src\DXCore.h" />
     <ClInclude Include="src\ErrorHandler.h" />
     <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\GameObject.h" />
     <ClInclude Include="src\SimpleShader.h" />
     <ClInclude Include="src\Vertex.h" />
     <ClInclude Include="src\Mesh.h" />

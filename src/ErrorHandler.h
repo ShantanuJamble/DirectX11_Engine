@@ -7,15 +7,10 @@
 #define ASSERT(X) if(X) __debugbreak();
 
 #define DXCall(X) \
-	HRESULT hr = S_OK;\
-	hr = X;\
-	if (FAILED(hr)){\
-		ErrorLogCall(#X,__FILE__,__LINE__,hr);\
+	if (FAILED(X)){\
+		ErrorLogCall(#X,__FILE__,__LINE__);\
 		__debugbreak();\
 	};
 
 
-void ErrorLogCall(const char * function, const char *file, int line,HRESULT hr)
-{
-	std::cout << "ERROR CODE: "<<hr<< ",in "<<function << "  in " << file << " at " << line << std::endl;
-}
+bool ErrorLogCall(const char * function, const char *file, int line);

@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include "Mesh.h"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -24,9 +25,9 @@ Game::Game(HINSTANCE hInstance)
 	vertexShader = 0;
 	pixelShader = 0;
 	//Initializes the Vector of the meshes
-	meshCount = 4;
+	meshCount = 1;
 	mesh = new Mesh *[meshCount];
-
+	gameObject = new GameObject*[gameObjectCount];
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -44,9 +45,13 @@ Game::~Game()
 {
 	// Delete our simple shader objects, which
 	// will clean up their own internal DirectX stuff
-	for (int index = 0; index < meshCount; index++)
+	for (unsigned index = 0; index < meshCount; index++)
 		delete mesh[index];
 	delete[] mesh;
+	for (unsigned index = 0; index < gameObjectCount; index++)
+		delete gameObject[index];
+	delete[] gameObject;
+	
 	delete vertexShader;
 	delete pixelShader;
 
@@ -100,9 +105,9 @@ void Game::CreateMatrices()
 	// - You'll notice a "transpose" happening below, which is redundant for
 	//    an identity matrix.  This is just to show that HLSL expects a different
 	//    matrix (column major vs row major) than the DirectX Math library
-	XMMATRIX W = XMMatrixIdentity();
-	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W)); // Transpose for HLSL!
-
+	
+	//XMMATRIX W = gameObject->GetWorldMatrix();
+	//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W));// Transpose for HLSL!
 	// Create the View matrix
 	// - In an actual game, recreate this matrix every time the camera 
 	//    moves (potentially every frame)
@@ -147,49 +152,23 @@ void Game::CreateBasicGeometry()
 	float x3 = -2.5f, y3 = 0.0f;
 	float incr = 0.0f;
 	int index = 0;
-	for (index = 0; index < 3; index++)
-	{
-		mesh[index] = new Mesh();
-		// Set up the vertices of the triangle we would like to draw
-		// - We're going to copy this array, exactly as it exists in memory
-		//    over to a DirectX-controlled data structure (the vertex buffer)
-		Vertex vertices[] =
-		{
-			{ XMFLOAT3(x1 + incr, y1 , +0.0f), red },
-			{ XMFLOAT3(x2 + incr, y2 , +0.0f), blue },
-			{ XMFLOAT3(x3 + incr, y3 , +0.0f), green },
-		};
-
-		// Set up the indices, which tell us which vertices to use and in which order
-		// - This is somewhat redundant for just 3 vertices (it's a simple example)
-		// - Indices are technically not required if the vertices are in the buffer 
-		//    in the correct order and each one will be used exactly once
-		// - But just to see how it's done...
-		int indices[] = { 0,1,2 };
-		mesh[index]->SetVertices(vertices, 3);
-		mesh[index]->SetIndices(indices, 3);
-
-		mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_VERTEX_BUFFER);
-		mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_INDEX_BUFFER);
-
-		mesh[index]->CreateBuffer(device);
-		incr += 2.0f;
-	}
-
+	
 	//Creating a hexagon
 	Vertex vertices[] = {
-			{ XMFLOAT3(1.0f,1.0f , +0.0f), red },
-			{ XMFLOAT3(1.5f,1.0f , +0.0f), blue },
+			{ XMFLOAT3(-0.5f, -0.5f , +0.0f), red },
+			{ XMFLOAT3( 0.0f, -0.5f ,  0.5f), blue },
+			{ XMFLOAT3( 0.5f, -0.5f ,  0.0f), green },
+			{ XMFLOAT3( 0.0f, 0.5f ,  0.0f), red },
 			
-			{ XMFLOAT3(1.5f,0.5f , +0.0f), red },
-			
-			{ XMFLOAT3(1.5f,0.0f , +0.0f), blue },
-			{ XMFLOAT3(1.0f,0.0f , +0.0f), green },
-			{ XMFLOAT3(0.5f,0.5f , +0.0f), green },
 	};
-	int indices[] = { 0,1,3,1,2,3,0,3,4,0,4,5 };
+	int indices[] = { 
+						0, 3, 1,
+						1, 3, 2,
+						2, 3, 0,
+						0, 1, 2 
+					};
 	mesh[index] = new Mesh();
-	mesh[index]->SetVertices(vertices, 6);
+	mesh[index]->SetVertices(vertices, 4);
 	mesh[index]->SetIndices(indices, 12);
 
 	mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_VERTEX_BUFFER);
@@ -197,6 +176,11 @@ void Game::CreateBasicGeometry()
 
 	mesh[index]->CreateBuffer(device);
 
+	for (UINT i = 0; i < gameObjectCount; i++)
+	{
+		gameObject[i] = new GameObject();
+		gameObject[i]->SetMesh(*mesh + index);
+	}
 }
 
 
@@ -226,6 +210,18 @@ void Game::Update(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+	curAngle += 0.05f;
+	if (curAngle >= 360)
+	{
+		curAngle -= 360;
+	}
+	for (UINT index = 0; index < gameObjectCount; index++)
+	{
+		gameObject[index]->Rotate(0.0f, 0.0f, curAngle);
+		gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
+		gameObject[index]->Translate((index%2)?-1.0f:1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
+		//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
+	}
 }
 
 // --------------------------------------------------------
@@ -251,46 +247,51 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - This is actually a complex process of copying data to a local buffer
 	//    and then copying that entire buffer to the GPU.  
 	//  - The "SimpleShader" class handles all of that for you.
-	vertexShader->SetMatrix4x4("world", worldMatrix);
-	vertexShader->SetMatrix4x4("view", viewMatrix);
-	vertexShader->SetMatrix4x4("projection", projectionMatrix);
+	for (UINT gameObjectIndex = 0; gameObjectIndex < gameObjectCount; gameObjectIndex++)
+	{
+		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[gameObjectIndex]->GetWorldMatrix()));
+		vertexShader->SetMatrix4x4("world", worldMatrix);
 
-	// Once you've set all of the data you care to change for
-	// the next draw call, you need to actually send it to the GPU
-	//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
-	vertexShader->CopyAllBufferData();
+		vertexShader->SetMatrix4x4("view", viewMatrix);
+		vertexShader->SetMatrix4x4("projection", projectionMatrix);
 
-	// Set the vertex and pixel shaders to use for the next Draw() command
-	//  - These don't technically need to be set every frame...YET
-	//  - Once you start applying different shaders to different objects,
-	//    you'll need to swap the current shaders before each draw
-	vertexShader->SetShader();
-	pixelShader->SetShader();
+		// Once you've set all of the data you care to change for
+		// the next draw call, you need to actually send it to the GPU
+		//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
+		vertexShader->CopyAllBufferData();
 
-	// Set buffers in the input assembler
-	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//    have different geometry.
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	ID3D11Buffer * vertexBufferTmp;
-	for (int index = 0; index < meshCount; index++) {
-		vertexBufferTmp = mesh[index]->GetVertexBuffer();
-		context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
-		context->IASetIndexBuffer(mesh[index]->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		// Set the vertex and pixel shaders to use for the next Draw() command
+		//  - These don't technically need to be set every frame...YET
+		//  - Once you start applying different shaders to different objects,
+		//    you'll need to swap the current shaders before each draw
+		vertexShader->SetShader();
+		pixelShader->SetShader();
 
-		// Finally do the actual drawing
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		//UINT indexCount = 3;
+		// Set buffers in the input assembler
+		//  - Do this ONCE PER OBJECT you're drawing, since each object might
+		//    have different geometry.
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer * vertexBufferTmp;
 
-		context->DrawIndexed(
-			mesh[index]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+		for (unsigned int index = 0; index < meshCount; index++) {
+			vertexBufferTmp = mesh[index]->GetVertexBuffer();
+			context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
+			context->IASetIndexBuffer(mesh[index]->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+			// Finally do the actual drawing
+			//  - Do this ONCE PER OBJECT you intend to draw
+			//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+			//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+			//     vertices in the currently set VERTEX BUFFER
+			//UINT indexCount = 3;
+
+			context->DrawIndexed(
+				mesh[index]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+				0,     // Offset to the first index we want to use
+				0);    // Offset to add to each index when looking up vertices
+		}
 	}
-
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

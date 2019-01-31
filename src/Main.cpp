@@ -49,7 +49,7 @@ int WINAPI WinMain(
 	Game dxGame(hInstance);
 
 	//// Result variable for function calls below
-	//HRESULT hr = S_OK;
+	
 
 	//// Attempt to create the window for our program, and
 	//// exit early if something failed

@@ -3,8 +3,11 @@
 #include <vector>
 
 #include "DXCore.h"
-#include "SimpleShader.h"
+#include "GameObject.h"
 #include "Mesh.h"
+#include "SimpleShader.h"
+
+
 
 class Game 
 	: public DXCore
@@ -48,6 +51,14 @@ private:
 
 	//Stores the VertexBuffer and Indices data for the mesh to be rendered.
 	Mesh **mesh;
+	GameObject **gameObject;
 	UINT meshCount = 0;
+	UINT gameObjectCount = 2;
+	//Rotation factors
+	float curAngle = 0.0f;
+
+
+
+
 };
 
