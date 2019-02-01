@@ -217,7 +217,9 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 	for (UINT index = 0; index < gameObjectCount; index++)
 	{
-		gameObject[index]->Rotate(0.0f, 0.0f, curAngle);
+		//Rotating objects around the Y and Z axes
+		gameObject[index]->Rotate(0.0f, curAngle, curAngle);
+		//Scaling on all 
 		gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
 		gameObject[index]->Translate((index%2)?-1.0f:1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
 		//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
