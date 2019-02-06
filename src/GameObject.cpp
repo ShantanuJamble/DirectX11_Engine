@@ -1,13 +1,19 @@
 #include "GameObject.h"
 #include <iostream>
 
-//Should be moved to some contants header
-const  float toRadians = 3.14159265f / 180.0f;
 
+DirectX::XMVECTOR worldUp = DirectX::XMVectorSet(0, 1, 0, 0);
 
 GameObject::GameObject()
 {
 	this->baseMesh = NULL;
+	front = DirectX::XMVectorSet(0, 0, -1, 0);
+	position = DirectX::XMVectorSet(0, 0, 0, 0);
+	up = DirectX::XMVectorSet(0, 1, 0, 0);
+	right = DirectX::XMVector4Cross(front,worldUp,DirectX::XMQuaternionIdentity());
+	roll = pitch = yaw = 0;
+	scale.x = scale.y = scale.z = 1;
+	movementSpeed = 5.0f;
 }
 
 void GameObject::SetMesh(Mesh * baseMesh)
@@ -19,9 +25,7 @@ void GameObject::SetMesh(Mesh * baseMesh)
 //Takes in values of translation along each axis and stores for fututre calculations.
 void GameObject::Translate(float const & x, float const  & y, float const  & z)
 {
-	translation.x = x;
-	translation.y = y;
-	translation.z = z;
+	position = DirectX::XMVectorSet(x, y, z,0);
 }
 
 //Takes in values of scaling along each axis and stores for fututre calculations.
@@ -41,7 +45,7 @@ void GameObject::Rotate(float const & pitch, float const & yaw, float const & ro
 }
 
 
-//Performs the SRT operations and returns the world matrix to the shader for darwing.
+//Performs the SRT operations and returns the world matrix to the shader for darwing. 
 const DirectX::XMMATRIX GameObject::GetWorldMatrix()
 {
 	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
@@ -49,14 +53,48 @@ const DirectX::XMMATRIX GameObject::GetWorldMatrix()
 	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixScaling(scale.x, scale.y, scale.z));
 
 	//Rotate
-	DirectX::XMVECTOR rotationVector = DirectX::XMQuaternionRotationRollPitchYaw(pitch*toRadians, yaw*toRadians , roll*toRadians);
-	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationQuaternion(rotationVector));	
-	
+	DirectX::XMVECTOR rotationVector = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(pitch), 
+																				 DirectX::XMConvertToRadians(yaw),
+																				 DirectX::XMConvertToRadians(roll)
+																			     );
+	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationQuaternion(rotationVector));
+	if (roll != 0 || pitch != 0 || yaw != 0)
+	{
+		front = DirectX::XMVector4Normalize(rotationVector);
+		right = DirectX::XMVector4Cross(front, worldUp, DirectX::XMQuaternionIdentity());
+		up =  DirectX::XMVector4Cross(right, front, DirectX::XMQuaternionIdentity());
+	}
 
 	//Translate
-	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixTranslation(translation.x, translation.y, translation.z));
+	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixTranslationFromVector(position));
 	return worldMatrix;
 }
+
+
+//Following functions handle the movement of object in the specific direction.
+void GameObject::MoveForward(float deltaTime)
+{
+	float velocity = movementSpeed * deltaTime;
+	position = DirectX::XMVectorAdd(position, DirectX::XMVectorScale(front, velocity* 1));
+}
+
+void GameObject::MoveBackward(float deltaTime)
+{
+	float velocity = movementSpeed * deltaTime;
+	position = DirectX::XMVectorAdd(position, DirectX::XMVectorScale(front, velocity * -1));
+}
+
+void GameObject::MoveRight(float deltaTime)
+{
+	float velocity = movementSpeed * deltaTime;
+	position = DirectX::XMVectorAdd(position, DirectX::XMVectorScale(right, velocity * 1));
+}
+
+void GameObject::MoveLeft(float deltaTime)
+{
+	float velocity = movementSpeed * deltaTime;
+	position = DirectX::XMVectorAdd(position, DirectX::XMVectorScale(right, velocity * -1));
+} 
 
 GameObject::~GameObject()
 {

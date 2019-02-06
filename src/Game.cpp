@@ -1,7 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include "Mesh.h"
-
+#include "Input.h"
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -28,6 +28,8 @@ Game::Game(HINSTANCE hInstance)
 	meshCount = 1;
 	mesh = new Mesh *[meshCount];
 	gameObject = new GameObject*[gameObjectCount];
+
+	
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -180,6 +182,7 @@ void Game::CreateBasicGeometry()
 	{
 		gameObject[i] = new GameObject();
 		gameObject[i]->SetMesh(*mesh + index);
+		//gameObject[i]->Rotate(90, 0, 0);
 	}
 }
 
@@ -208,22 +211,31 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	// Quit if the escape key is pressed
-	if (GetAsyncKeyState(VK_ESCAPE))
+	if (Input::IsKeyPressed(VK_ESCAPE))
 		Quit();
+	
+	if (Input::IsKeyPressed('W'))
+		gameObject[0]->MoveForward(deltaTime);
+	if (Input::IsKeyPressed('S'))
+		gameObject[0]->MoveBackward(deltaTime);
+	if (Input::IsKeyPressed('A'))
+		gameObject[0]->MoveLeft(deltaTime);
+	if (Input::IsKeyPressed('D'))
+		gameObject[0]->MoveRight(deltaTime);
 	curAngle += 0.05f;
 	if (curAngle >= 360)
 	{
 		curAngle -= 360;
 	}
-	for (UINT index = 0; index < gameObjectCount; index++)
-	{
-		//Rotating objects around the Y and Z axes
-		gameObject[index]->Rotate(0.0f, curAngle, curAngle);
-		//Scaling on all 
-		gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
-		gameObject[index]->Translate((index%2)?-1.0f:1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
-		//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
-	}
+	//for (UINT index = 0; index < gameObjectCount; index++)
+	//{
+	//	//Rotating objects around the Y and Z axes
+	//	gameObject[index]->Rotate(0.0f, curAngle, curAngle);
+	//	//Scaling on all 
+	//	//gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
+	//	//gameObject[index]->Translate(0.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
+	//	//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
+	//}
 }
 
 // --------------------------------------------------------

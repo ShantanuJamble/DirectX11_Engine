@@ -53,12 +53,9 @@ private:
 	Mesh **mesh;
 	GameObject **gameObject;
 	UINT meshCount = 0;
-	UINT gameObjectCount = 2;
+	UINT gameObjectCount = 1;
 	//Rotation factors
 	float curAngle = 0.0f;
-
-
-
 
 };
 

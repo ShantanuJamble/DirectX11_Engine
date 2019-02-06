@@ -149,6 +149,7 @@
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\DXCore.cpp" />
     <ClCompile Include="src\ErrorHandler.cpp" />
     <ClCompile Include="src\Game.cpp" />
@@ -167,6 +168,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Input.h" />
     <ClInclude Include="src\DXCore.h" />
     <ClInclude Include="src\ErrorHandler.h" />
     <ClInclude Include="src\Game.h" />
