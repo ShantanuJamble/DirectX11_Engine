@@ -4,6 +4,7 @@
 
 3. [Moving gameobjects with controls](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/5df18dfbd65fa20b239f9786774305bff34fc243)
 
+4. [Camera and movement with keys] (https://github.com/ShantanuJamble/DirectX11_TestProject/commit/f7f60b03cc0477375969271abfab68d0c61de9ab)
 
 
 
