@@ -2,6 +2,7 @@
 #include "Vertex.h"
 #include "Mesh.h"
 #include "Input.h"
+#include "Material.h"
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -20,12 +21,10 @@ Game::Game(HINSTANCE hInstance)
 		1280,			// Width of the window's client area
 		720,			// Height of the window's client area
 		true),			// Show extra stats (fps) in title bar?
-		vertexShader(nullptr),pixelShader(nullptr),
-		camera((Mesh*)nullptr, XMFLOAT3(0, 0, 1), XMFLOAT3(0, 0, -5), 5.0f)
+		camera(XMFLOAT3(0, 0, 1), XMFLOAT3(0, 0, -5), 5.0f),
+		material(nullptr)
 {
-	// Initialize fields
-	vertexShader = 0;
-	pixelShader = 0;
+	
 	//Initializes the Vector of the meshes
 	meshCount = 1;
 	mesh = new Mesh *[meshCount];
@@ -56,9 +55,7 @@ Game::~Game()
 		delete gameObject[index];
 	delete[] gameObject;
 	
-	delete vertexShader;
-	delete pixelShader;
-
+	delete material;
 }
 
 // --------------------------------------------------------
@@ -88,11 +85,13 @@ void Game::Init()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
-	vertexShader = new SimpleVertexShader(device, context);
-	vertexShader->LoadShaderFile(L"VertexShader.cso");
+	SimpleVertexShader * tvertexShader = new SimpleVertexShader(device, context);
+	tvertexShader->LoadShaderFile(L"VertexShader.cso");
 
-	pixelShader = new SimplePixelShader(device, context);
-	pixelShader->LoadShaderFile(L"PixelShader.cso");
+	SimplePixelShader * tpixelShader = new SimplePixelShader(device, context);
+	tpixelShader->LoadShaderFile(L"PixelShader.cso");
+
+	material = new Material(tvertexShader, tpixelShader);
 }
 
 
@@ -183,7 +182,7 @@ void Game::CreateBasicGeometry()
 	for (UINT i = 0; i < gameObjectCount; i++)
 	{
 		float movementspeed = 5.0f;
-		gameObject[i] = new GameObject(mesh[index], XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
+		gameObject[i] = new GameObject(mesh[index],material, XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
 		
 		//gameObject[i]->Rotate(90, 0, 0);
 	}
@@ -199,13 +198,7 @@ void Game::OnResize()
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
 
-	// Update our projection matrix since the window size changed
-	XMMATRIX P = XMMatrixPerspectiveFovLH(
-		0.25f * 3.1415926535f,	// Field of View Angle
-		(float)width / height,	// Aspect ratio
-		0.1f,				  	// Near clip plane distance
-		100.0f);			  	// Far clip plane distance
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
+	camera.ChangeAspectRatio(width, height);
 }
 
 // --------------------------------------------------------
@@ -257,26 +250,34 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - This is actually a complex process of copying data to a local buffer
 	//    and then copying that entire buffer to the GPU.  
 	//  - The "SimpleShader" class handles all of that for you.
+	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(camera.GetViewMatrix()));
+	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(camera.GetProjectionMatrix()));
+	Material *objectMaterial;
+	SimpleVertexShader* objectVertexShader;
+	SimplePixelShader* objectPixelShader;
 	for (UINT gameObjectIndex = 0; gameObjectIndex < gameObjectCount; gameObjectIndex++)
 	{
+		objectMaterial = gameObject[gameObjectIndex]->GetMaterial();
+		objectVertexShader = objectMaterial->GetVertexShader();
+		objectPixelShader = objectMaterial->GetPixelShader();
 		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[gameObjectIndex]->GetWorldMatrix()));
-		vertexShader->SetMatrix4x4("world", worldMatrix);
+		objectVertexShader->SetMatrix4x4("world", worldMatrix);
 
-		XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(camera.GetViewMatrix()));
-		vertexShader->SetMatrix4x4("view", viewMatrix);
-		vertexShader->SetMatrix4x4("projection", projectionMatrix);
+		
+		objectVertexShader->SetMatrix4x4("view", viewMatrix);
+		objectVertexShader->SetMatrix4x4("projection", projectionMatrix);
 
 		// Once you've set all of the data you care to change for
 		// the next draw call, you need to actually send it to the GPU
 		//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
-		vertexShader->CopyAllBufferData();
+		objectVertexShader->CopyAllBufferData();
 
 		// Set the vertex and pixel shaders to use for the next Draw() command
 		//  - These don't technically need to be set every frame...YET
 		//  - Once you start applying different shaders to different objects,
 		//    you'll need to swap the current shaders before each draw
-		vertexShader->SetShader();
-		pixelShader->SetShader();
+		objectVertexShader->SetShader();
+		objectPixelShader->SetShader();
 
 		// Set buffers in the input assembler
 		//  - Do this ONCE PER OBJECT you're drawing, since each object might
@@ -284,24 +285,24 @@ void Game::Draw(float deltaTime, float totalTime)
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		ID3D11Buffer * vertexBufferTmp;
+		Mesh *tmpMesh = gameObject[gameObjectIndex]->GetMesh();
+		
+		vertexBufferTmp = tmpMesh->GetVertexBuffer();
+		context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
+		context->IASetIndexBuffer(tmpMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
-		for (unsigned int index = 0; index < meshCount; index++) {
-			vertexBufferTmp = mesh[index]->GetVertexBuffer();
-			context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
-			context->IASetIndexBuffer(mesh[index]->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		// Finally do the actual drawing
+		//  - Do this ONCE PER OBJECT you intend to draw
+		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+		//     vertices in the currently set VERTEX BUFFER
+		//UINT indexCount = 3;
 
-			// Finally do the actual drawing
-			//  - Do this ONCE PER OBJECT you intend to draw
-			//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-			//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-			//     vertices in the currently set VERTEX BUFFER
-			//UINT indexCount = 3;
-
-			context->DrawIndexed(
-				mesh[index]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-				0,     // Offset to the first index we want to use
-				0);    // Offset to add to each index when looking up vertices
-		}
+		context->DrawIndexed(
+			tmpMesh->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
+	
 	}
 
 	// Present the back buffer to the user

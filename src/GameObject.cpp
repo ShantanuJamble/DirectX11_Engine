@@ -5,22 +5,24 @@ static DirectX::XMVECTOR worldUp = DirectX::XMVectorSet(0, 1, 0, 0);
 
 
 ///TODO: Use Member initilizer lists.
-GameObject::GameObject(Mesh* const & mesh,DirectX::XMFLOAT3& front,DirectX::XMFLOAT3& position,float const & speed)
-	: baseMesh(mesh),pitch(0),yaw(0),roll(0),scale(1,1,1),movementSpeed(speed)
+GameObject::GameObject(Mesh* const & mesh, Material * const material, DirectX::XMFLOAT3& front, DirectX::XMFLOAT3& position, float const & speed)
+	: baseMesh(mesh), baseMaterial(material), pitch(0), yaw(0), roll(0), scale(1, 1, 1), movementSpeed(speed)
 {
-	this->baseMesh = NULL;
 	this->front = DirectX::XMVectorSet(front.x, front.y, front.z, 0);
 	this->position = DirectX::XMVectorSet(position.x, position.y, position.z, 0);
 	up = DirectX::XMVectorSet(0, 1, 0, 0);
-	right = DirectX::XMVector4Cross(worldUp, this->front,DirectX::XMQuaternionIdentity());
-	
+	right = DirectX::XMVector4Cross(worldUp, this->front, DirectX::XMQuaternionIdentity());
 }
+
 
 void GameObject::SetMesh(Mesh*& baseMesh)
 {
 	this->baseMesh = baseMesh;
 }
-
+void GameObject::SetMaterial(Material *& material)
+{
+	baseMaterial = material;
+}
 
 //Takes in values of translation along each axis and stores for fututre calculations.
 void GameObject::Translate(float const & x, float const  & y, float const  & z)
