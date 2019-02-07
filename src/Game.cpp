@@ -19,7 +19,9 @@ Game::Game(HINSTANCE hInstance)
 		"DirectX Game",	   	// Text for the window's title bar
 		1280,			// Width of the window's client area
 		720,			// Height of the window's client area
-		true)			// Show extra stats (fps) in title bar?
+		true),			// Show extra stats (fps) in title bar?
+		vertexShader(nullptr),pixelShader(nullptr),
+		camera((Mesh*)nullptr, XMFLOAT3(0, 0, 1), XMFLOAT3(0, 0, -5), 5.0f)
 {
 	// Initialize fields
 	vertexShader = 0;
@@ -117,14 +119,14 @@ void Game::CreateMatrices()
 	//    camera and the direction vector along which to look (as well as "up")
 	// - Another option is the LOOK AT function, to look towards a specific
 	//    point in 3D space
-	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
-	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
-	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
-	XMMATRIX V = XMMatrixLookToLH(
-		pos,     // The position of the "camera"
-		dir,     // Direction the camera is looking
-		up);     // "Up" direction in 3D space (prevents roll)
-	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(V)); // Transpose for HLSL!
+	//XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
+	//XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
+	//XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+	//XMMATRIX V = XMMatrixLookToLH(
+	//	pos,     // The position of the "camera"
+	//	dir,     // Direction the camera is looking
+	//	up);     // "Up" direction in 3D space (prevents roll)
+	//XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(V)); // Transpose for HLSL!
 
 	// Create the Projection matrix
 	// - This should match the window's aspect ratio, and also update anytime
@@ -180,8 +182,9 @@ void Game::CreateBasicGeometry()
 
 	for (UINT i = 0; i < gameObjectCount; i++)
 	{
-		gameObject[i] = new GameObject();
-		gameObject[i]->SetMesh(*mesh + index);
+		float movementspeed = 5.0f;
+		gameObject[i] = new GameObject(mesh[index], XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
+		
 		//gameObject[i]->Rotate(90, 0, 0);
 	}
 }
@@ -214,28 +217,21 @@ void Game::Update(float deltaTime, float totalTime)
 	if (Input::IsKeyPressed(VK_ESCAPE))
 		Quit();
 	
-	if (Input::IsKeyPressed('W'))
-		gameObject[0]->MoveForward(deltaTime);
-	if (Input::IsKeyPressed('S'))
-		gameObject[0]->MoveBackward(deltaTime);
-	if (Input::IsKeyPressed('A'))
-		gameObject[0]->MoveLeft(deltaTime);
-	if (Input::IsKeyPressed('D'))
-		gameObject[0]->MoveRight(deltaTime);
+	camera.CheckKeyPress(deltaTime);
 	curAngle += 0.05f;
 	if (curAngle >= 360)
 	{
 		curAngle -= 360;
 	}
-	//for (UINT index = 0; index < gameObjectCount; index++)
-	//{
-	//	//Rotating objects around the Y and Z axes
-	//	gameObject[index]->Rotate(0.0f, curAngle, curAngle);
-	//	//Scaling on all 
-	//	//gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
-	//	//gameObject[index]->Translate(0.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
-	//	//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
-	//}
+	for (UINT index = 0; index < gameObjectCount; index++)
+	{
+		//Rotating objects around the Y and Z axes
+		gameObject[index]->Rotate(0.0f, curAngle, curAngle);
+		//Scaling on all 
+		gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
+		gameObject[index]->Translate((index % 2) ? -1.0f : 1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
+		//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
+	}
 }
 
 // --------------------------------------------------------
@@ -266,6 +262,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[gameObjectIndex]->GetWorldMatrix()));
 		vertexShader->SetMatrix4x4("world", worldMatrix);
 
+		XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(camera.GetViewMatrix()));
 		vertexShader->SetMatrix4x4("view", viewMatrix);
 		vertexShader->SetMatrix4x4("projection", projectionMatrix);
 

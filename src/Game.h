@@ -6,7 +6,7 @@
 #include "GameObject.h"
 #include "Mesh.h"
 #include "SimpleShader.h"
-
+#include "Camera.h"
 
 
 class Game 
@@ -53,9 +53,12 @@ private:
 	Mesh **mesh;
 	GameObject **gameObject;
 	UINT meshCount = 0;
-	UINT gameObjectCount = 1;
+	UINT gameObjectCount = 2;
 	//Rotation factors
 	float curAngle = 0.0f;
+	
+	//Camera
+	Camera camera;
 
 };
 

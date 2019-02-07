@@ -149,6 +149,7 @@
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\DXCore.cpp" />
     <ClCompile Include="src\ErrorHandler.cpp" />
@@ -168,6 +169,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Input.h" />
     <ClInclude Include="src\DXCore.h" />
     <ClInclude Include="src\ErrorHandler.h" />
