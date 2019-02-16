@@ -10,4 +10,6 @@
 
 6. [Loading 3d models](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/7f77d29afe2532b71a217b7124db54db39a9e227)
 
+7. [Lighting Demo](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/9d3be80d8c40d2a6f17ce5fa2bd0f98638dd1761)
+
 
