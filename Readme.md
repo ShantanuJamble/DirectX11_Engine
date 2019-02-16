@@ -8,5 +8,6 @@
 
 5. [Material](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/8d5d453c10cac6caaee92ef5b8198c05de566c64)
 
+6. [Loading 3d models](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/7f77d29afe2532b71a217b7124db54db39a9e227)
 
 
