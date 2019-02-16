@@ -8,7 +8,7 @@
 #include "SimpleShader.h"
 #include "Camera.h"
 #include "Material.h"
-
+#include "Lights.h"
 class Game 
 	: public DXCore
 {
@@ -62,6 +62,11 @@ private:
 	//Material
 	Material * material;
 
+	//Lighting
+	DirectionalLight directionalLight;
+	PointLight pointLight;
 
+	//Toggling between objects
+	int currentObj;
 };
 

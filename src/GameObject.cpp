@@ -60,6 +60,7 @@ const DirectX::XMMATRIX& GameObject::GetWorldMatrix()
 																				 DirectX::XMConvertToRadians(roll)
 																			     );
 	worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, DirectX::XMMatrixRotationQuaternion(rotationVector));
+	
 	if (roll != 0 || pitch != 0 || yaw != 0)
 	{
 		front = DirectX::XMVector4Normalize(rotationVector);

@@ -10,6 +10,7 @@ protected:
 	Mesh * baseMesh;
 	Material * baseMaterial;
 	DirectX::XMMATRIX worldMatrix;
+
 	//Queternions for rotation
 	float pitch;
 	float yaw;
@@ -44,6 +45,7 @@ public:
 	void MoveLeft(float const & deltaTime);
 	void MoveUp(float const & deltaTime);
 	void MoveDown(float const & deltaTime);
+	const DirectX::XMVECTOR & GetPosition() { return position; }
 
 	//Material managing methods
 	void SetMaterial(Material *& material);

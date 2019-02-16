@@ -3,7 +3,7 @@
 
 
 Material::Material(SimpleVertexShader *& vShader, SimplePixelShader *& pShader)
-	:vertexShader(vShader),pixelShader(pShader)
+	:vertexShader(vShader),pixelShader(pShader),shininess(70.0f)
 {
 }
 

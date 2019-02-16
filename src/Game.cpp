@@ -63,6 +63,19 @@ void Game::Init()
 	CreateMatrices();
 	CreateBasicGeometry();
 
+	//Updating lighting
+	directionalLight = {
+				XMFLOAT4(0.1f , 0.1f, 0.1f ,1.0f),
+				XMFLOAT4(1,0,0,1),
+				XMFLOAT3(-1,0,0)
+
+			};
+
+	pointLight = {
+				XMFLOAT4(0,0,1,1),
+				XMFLOAT3(0,3,0)
+	};
+
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -127,7 +140,7 @@ void Game::CreateMatrices()
 		(float)width / height,		// Aspect ratio
 		0.1f,						// Near clip plane distance
 		100.0f);					// Far clip plane distance
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
+	DirectX::XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
 }
 
 
@@ -139,12 +152,16 @@ void Game::CreateBasicGeometry()
 	float incr = 0.0f;
 	int index = 0;
 	
-	std::cout << FileHandler::getCWD() << std::endl;
-	Mesh * cubeMesh = new Mesh("models/Cube.obj",device);
+	std::string pathToAssets = FileHandler::getCWD();
+	pathToAssets.append("\\..\\..\\..\\assets\\models\\");
+	std::string pathToHelix = pathToAssets.append("helix.obj");
+	Mesh * cubeMesh = new Mesh(pathToHelix.c_str(),device);
 	meshes.push_back(cubeMesh);
 	
 	GameObject * cubeObject= new GameObject(cubeMesh,material, XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
 	gameObjects.push_back(cubeObject);
+
+
 	
 }
 
@@ -178,12 +195,9 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 	for (int index = 0;index<gameObjects.size();index++)
 	{
-		//Rotating objects around the Y and Z axes
-		gameObjects[index]->Rotate(0.0f, curAngle, curAngle);
-		//Scaling on all 
-		gameObjects[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
-		gameObjects[index]->Translate((index % 2) ? -1.0f : 1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
-		//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
+		gameObjects[index]->Rotate(0, curAngle, 0);
+		gameObjects[index]->Translate(sin(totalTime) * 2, 0, 0);
+
 	}
 }
 
@@ -193,7 +207,7 @@ void Game::Update(float deltaTime, float totalTime)
 void Game::Draw(float deltaTime, float totalTime)
 {
 	// Background color (Cornflower Blue in this case) for clearing
-	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
+	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
@@ -210,8 +224,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - This is actually a complex process of copying data to a local buffer
 	//    and then copying that entire buffer to the GPU.  
 	//  - The "SimpleShader" class handles all of that for you.
-	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(camera.GetViewMatrix()));
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(camera.GetProjectionMatrix()));
+	DirectX::XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(camera.GetViewMatrix()));
+	DirectX::XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(camera.GetProjectionMatrix()));
 	Material *objectMaterial;
 	SimpleVertexShader* objectVertexShader;
 	SimplePixelShader* objectPixelShader;
@@ -220,18 +234,22 @@ void Game::Draw(float deltaTime, float totalTime)
 		objectMaterial = gameObject->GetMaterial();
 		objectVertexShader = objectMaterial->GetVertexShader();
 		objectPixelShader = objectMaterial->GetPixelShader();
-		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject->GetWorldMatrix()));
-		objectVertexShader->SetMatrix4x4("world", worldMatrix);
-
+		DirectX::XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject->GetWorldMatrix()));
 		
+		objectVertexShader->SetMatrix4x4("world", worldMatrix);
 		objectVertexShader->SetMatrix4x4("view", viewMatrix);
 		objectVertexShader->SetMatrix4x4("projection", projectionMatrix);
-
+		
+		objectPixelShader->SetData("directionalLight", &directionalLight, sizeof(DirectionalLight));
+		objectPixelShader->SetFloat("shininess", objectMaterial->GetShinniness());
+		objectPixelShader->SetFloat3("CameraPosition", XMFLOAT3(0, 0, -5));
+		objectPixelShader->SetFloat("shinniness", objectMaterial->GetShinniness());
+		objectPixelShader->SetData("pointLight", &pointLight, sizeof(PointLight));
 		// Once you've set all of the data you care to change for
 		// the next draw call, you need to actually send it to the GPU
 		//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
 		objectVertexShader->CopyAllBufferData();
-
+		objectPixelShader->CopyAllBufferData();
 		// Set the vertex and pixel shaders to use for the next Draw() command
 		//  - These don't technically need to be set every frame...YET
 		//  - Once you start applying different shaders to different objects,
