@@ -49,11 +49,10 @@ private:
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;
 
-	//Stores the VertexBuffer and Indices data for the mesh to be rendered.
-	Mesh **mesh;
-	GameObject **gameObject;
-	UINT meshCount = 0;
-	UINT gameObjectCount = 2;
+	//Keeping track of Meshes and GameObjects
+	std::vector<Mesh *> meshes;
+	std::vector<GameObject *> gameObjects;
+	
 	//Rotation factors
 	float curAngle = 0.0f;
 	

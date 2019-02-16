@@ -3,6 +3,8 @@
 #include "Mesh.h"
 #include "Input.h"
 #include "Material.h"
+#include "FileHandler.h"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -24,13 +26,7 @@ Game::Game(HINSTANCE hInstance)
 		camera(XMFLOAT3(0, 0, 1), XMFLOAT3(0, 0, -5), 5.0f),
 		material(nullptr)
 {
-	
-	//Initializes the Vector of the meshes
-	meshCount = 1;
-	mesh = new Mesh *[meshCount];
-	gameObject = new GameObject*[gameObjectCount];
 
-	
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -48,13 +44,9 @@ Game::~Game()
 {
 	// Delete our simple shader objects, which
 	// will clean up their own internal DirectX stuff
-	for (unsigned index = 0; index < meshCount; index++)
-		delete mesh[index];
-	delete[] mesh;
-	for (unsigned index = 0; index < gameObjectCount; index++)
-		delete gameObject[index];
-	delete[] gameObject;
-	
+	// Clean up our other resources
+	for (auto& mesh : meshes) delete mesh;
+	for (auto& objects : gameObjects) delete objects;
 	delete material;
 }
 
@@ -144,48 +136,16 @@ void Game::CreateMatrices()
 // --------------------------------------------------------
 void Game::CreateBasicGeometry()
 {
-	// Create some temporary variables to represent colors
-	// - Not necessary, just makes things more readable
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	float x1 = -1.5f, y1 = 1.5f;
-	float x2 = -1.5f, y2 = 0.0f;
-	float x3 = -2.5f, y3 = 0.0f;
 	float incr = 0.0f;
 	int index = 0;
 	
-	//Creating a hexagon
-	Vertex vertices[] = {
-			{ XMFLOAT3(-0.5f, -0.5f , +0.0f), red },
-			{ XMFLOAT3( 0.0f, -0.5f ,  0.5f), blue },
-			{ XMFLOAT3( 0.5f, -0.5f ,  0.0f), green },
-			{ XMFLOAT3( 0.0f, 0.5f ,  0.0f), red },
-			
-	};
-	int indices[] = { 
-						0, 3, 1,
-						1, 3, 2,
-						2, 3, 0,
-						0, 1, 2 
-					};
-	mesh[index] = new Mesh();
-	mesh[index]->SetVertices(vertices, 4);
-	mesh[index]->SetIndices(indices, 12);
-
-	mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_VERTEX_BUFFER);
-	mesh[index]->SetBufferDesc(D3D11_USAGE_IMMUTABLE, D3D11_BIND_INDEX_BUFFER);
-
-	mesh[index]->CreateBuffer(device);
-
-	for (UINT i = 0; i < gameObjectCount; i++)
-	{
-		float movementspeed = 5.0f;
-		gameObject[i] = new GameObject(mesh[index],material, XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
-		
-		//gameObject[i]->Rotate(90, 0, 0);
-	}
+	std::cout << FileHandler::getCWD() << std::endl;
+	Mesh * cubeMesh = new Mesh("models/Cube.obj",device);
+	meshes.push_back(cubeMesh);
+	
+	GameObject * cubeObject= new GameObject(cubeMesh,material, XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
+	gameObjects.push_back(cubeObject);
+	
 }
 
 
@@ -216,13 +176,13 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		curAngle -= 360;
 	}
-	for (UINT index = 0; index < gameObjectCount; index++)
+	for (int index = 0;index<gameObjects.size();index++)
 	{
 		//Rotating objects around the Y and Z axes
-		gameObject[index]->Rotate(0.0f, curAngle, curAngle);
+		gameObjects[index]->Rotate(0.0f, curAngle, curAngle);
 		//Scaling on all 
-		gameObject[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
-		gameObject[index]->Translate((index % 2) ? -1.0f : 1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
+		gameObjects[index]->Scale((sin(totalTime*10.0f)+2)/2, (sin(totalTime*10.0f) + 2) / 2, (sin(totalTime*10.0f) + 2) / 2);
+		gameObjects[index]->Translate((index % 2) ? -1.0f : 1.0f, sin(totalTime*10.0f) / 100.0f,0.0f);
 		//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[index]->GetWorldMatrix()));
 	}
 }
@@ -255,12 +215,12 @@ void Game::Draw(float deltaTime, float totalTime)
 	Material *objectMaterial;
 	SimpleVertexShader* objectVertexShader;
 	SimplePixelShader* objectPixelShader;
-	for (UINT gameObjectIndex = 0; gameObjectIndex < gameObjectCount; gameObjectIndex++)
+	for(auto gameObject:gameObjects)
 	{
-		objectMaterial = gameObject[gameObjectIndex]->GetMaterial();
+		objectMaterial = gameObject->GetMaterial();
 		objectVertexShader = objectMaterial->GetVertexShader();
 		objectPixelShader = objectMaterial->GetPixelShader();
-		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject[gameObjectIndex]->GetWorldMatrix()));
+		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject->GetWorldMatrix()));
 		objectVertexShader->SetMatrix4x4("world", worldMatrix);
 
 		
@@ -285,7 +245,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		ID3D11Buffer * vertexBufferTmp;
-		Mesh *tmpMesh = gameObject[gameObjectIndex]->GetMesh();
+		Mesh *tmpMesh = gameObject->GetMesh();
 		
 		vertexBufferTmp = tmpMesh->GetVertexBuffer();
 		context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);

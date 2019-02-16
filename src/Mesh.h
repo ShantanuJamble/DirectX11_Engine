@@ -20,6 +20,7 @@ protected:
 	D3D11_SUBRESOURCE_DATA initialIndexData;
 public:
 	Mesh() {};
+	Mesh(const char * filePath, ID3D11Device* &device);
 	~Mesh();
 	void SetVertices(Vertex * vertecies,int const &vertexCount);
 	void SetIndices(int * indices,int const &indexCount);
