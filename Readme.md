@@ -6,5 +6,7 @@
 
 4. [Camera and movement with keys](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/f7f60b03cc0477375969271abfab68d0c61de9ab)
 
+5. [Material](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/8d5d453c10cac6caaee92ef5b8198c05de566c64)
+
 
 
