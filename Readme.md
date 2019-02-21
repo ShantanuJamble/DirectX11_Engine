@@ -12,4 +12,6 @@
 
 7. [Lighting Demo](https://github.com/ShantanuJamble/DirectX11_TestProject/commit/9d3be80d8c40d2a6f17ce5fa2bd0f98638dd1761)
 
+8. [Textures](https://github.com/ShantanuJamble/DirectX11_Engine/commit/b5a9211482a42c856e81596950d94d150eed6c12)
+
 
