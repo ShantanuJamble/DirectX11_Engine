@@ -4,6 +4,8 @@
 #include "Input.h"
 #include "Material.h"
 #include "FileHandler.h"
+#include "Texture.h"
+
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -45,9 +47,13 @@ Game::~Game()
 	// Delete our simple shader objects, which
 	// will clean up their own internal DirectX stuff
 	// Clean up our other resources
+	delete material;
+	
+	delete sampler;
 	for (auto& mesh : meshes) delete mesh;
 	for (auto& objects : gameObjects) delete objects;
-	delete material;
+	for (auto& texture : textures) delete texture;
+	
 }
 
 // --------------------------------------------------------
@@ -59,23 +65,38 @@ void Game::Init()
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
-	LoadShaders();
-	CreateMatrices();
-	CreateBasicGeometry();
+	
 
 	//Updating lighting
 	directionalLight = {
 				XMFLOAT4(0.1f , 0.1f, 0.1f ,1.0f),
-				XMFLOAT4(1,0,0,1),
+				XMFLOAT4(1,1,1,1),
 				XMFLOAT3(-1,0,0)
 
 			};
 
 	pointLight = {
-				XMFLOAT4(0,0,1,1),
+				XMFLOAT4(1,1,1,1),
 				XMFLOAT3(0,3,0)
 	};
 
+	//Creating multiple textures
+	Texture * sampleTextureStone= new Texture(L"Textures/stone.png", device, context);
+	Texture * sampleTextureWall= new Texture(L"Textures/wall.png", device, context);
+	textures.push_back(sampleTextureStone);
+	textures.push_back(sampleTextureWall);
+	D3D11_SAMPLER_DESC sampDesc = {}; // " = {}" fills the whole struct with zeros!
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;			// This will ensure mip maps are used!
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR ;		//D3D11_FILTER_ANISOTROPIC;	// Tri-linear filtering
+	//sampDesc.MaxAnisotropy = 16; // Must  be set for anisotropic filtering
+	
+	//TODO::Here we will ask material class to create Sampler with the above desc.
+	sampler = new Sampler(sampDesc, device, context);
+	LoadShaders();
+	CreateBasicGeometry();
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -96,52 +117,12 @@ void Game::LoadShaders()
 	SimplePixelShader * tpixelShader = new SimplePixelShader(device, context);
 	tpixelShader->LoadShaderFile(L"PixelShader.cso");
 
-	material = new Material(tvertexShader, tpixelShader);
-}
-
-
-
-// --------------------------------------------------------
-// Initializes the matrices necessary to represent our geometry's 
-// transformations and our 3D camera
-// --------------------------------------------------------
-void Game::CreateMatrices()
-{
-	// Set up world matrix
-	// - In an actual game, each object will need one of these and they should
-	//    update when/if the object moves (every frame)
-	// - You'll notice a "transpose" happening below, which is redundant for
-	//    an identity matrix.  This is just to show that HLSL expects a different
-	//    matrix (column major vs row major) than the DirectX Math library
+	material = new Material(tvertexShader, tpixelShader,textures[0],sampler);
 	
-	//XMMATRIX W = gameObject->GetWorldMatrix();
-	//XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W));// Transpose for HLSL!
-	// Create the View matrix
-	// - In an actual game, recreate this matrix every time the camera 
-	//    moves (potentially every frame)
-	// - We're using the LOOK TO function, which takes the position of the
-	//    camera and the direction vector along which to look (as well as "up")
-	// - Another option is the LOOK AT function, to look towards a specific
-	//    point in 3D space
-	//XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
-	//XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
-	//XMVECTOR up = XMVectorSet(0, 1, 0, 0);
-	//XMMATRIX V = XMMatrixLookToLH(
-	//	pos,     // The position of the "camera"
-	//	dir,     // Direction the camera is looking
-	//	up);     // "Up" direction in 3D space (prevents roll)
-	//XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(V)); // Transpose for HLSL!
-
-	// Create the Projection matrix
-	// - This should match the window's aspect ratio, and also update anytime
-	//    the window resizes (which is already happening in OnResize() below)
-	XMMATRIX P = XMMatrixPerspectiveFovLH(
-		0.25f * 3.1415926535f,		// Field of View Angle
-		(float)width / height,		// Aspect ratio
-		0.1f,						// Near clip plane distance
-		100.0f);					// Far clip plane distance
-	DirectX::XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
 }
+
+
+
 
 
 // --------------------------------------------------------
@@ -229,9 +210,13 @@ void Game::Draw(float deltaTime, float totalTime)
 	Material *objectMaterial;
 	SimpleVertexShader* objectVertexShader;
 	SimplePixelShader* objectPixelShader;
+	Texture* objectTexture;
+	Sampler* objectSampler;
 	for(auto gameObject:gameObjects)
 	{
 		objectMaterial = gameObject->GetMaterial();
+		objectTexture = objectMaterial->GetTexture();
+		objectSampler = objectMaterial->GetSampler();
 		objectVertexShader = objectMaterial->GetVertexShader();
 		objectPixelShader = objectMaterial->GetPixelShader();
 		DirectX::XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(gameObject->GetWorldMatrix()));
@@ -250,6 +235,12 @@ void Game::Draw(float deltaTime, float totalTime)
 		//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
 		objectVertexShader->CopyAllBufferData();
 		objectPixelShader->CopyAllBufferData();
+
+		// Set texture-related resources
+		objectPixelShader->SetSamplerState("BasicSampler", objectSampler->GetSamplerState());
+		objectPixelShader->SetShaderResourceView("DiffuseTexture",objectTexture->GetTextureSRV());
+		//pixelShader->SetShaderResourceView("SpecularMap", specSRV);
+
 		// Set the vertex and pixel shaders to use for the next Draw() command
 		//  - These don't technically need to be set every frame...YET
 		//  - Once you start applying different shaders to different objects,
@@ -268,6 +259,8 @@ void Game::Draw(float deltaTime, float totalTime)
 		vertexBufferTmp = tmpMesh->GetVertexBuffer();
 		context->IASetVertexBuffers(0, 1, &vertexBufferTmp, &stride, &offset);
 		context->IASetIndexBuffer(tmpMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+
 
 		// Finally do the actual drawing
 		//  - Do this ONCE PER OBJECT you intend to draw

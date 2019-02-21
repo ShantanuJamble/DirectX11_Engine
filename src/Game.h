@@ -9,6 +9,8 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Lights.h"
+#include "Texture.h"
+#include "Sampler.h"
 class Game 
 	: public DXCore
 {
@@ -33,7 +35,7 @@ private:
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders(); 
-	void CreateMatrices();
+	//void CreateMatrices();
 	void CreateBasicGeometry();
 
 	// Wrappers for DirectX shaders to provide simplified functionality
@@ -61,7 +63,8 @@ private:
 	
 	//Material
 	Material * material;
-
+	std::vector<Texture *> textures;
+	Sampler * sampler;
 	//Lighting
 	DirectionalLight directionalLight;
 	PointLight pointLight;

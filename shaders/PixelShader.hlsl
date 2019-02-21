@@ -23,6 +23,9 @@ cbuffer externalData : register(b0)
 	PointLight pointLight;
 }
 
+//Texture and sampler buffers
+Texture2D DiffuseTexture: register(t0);
+SamplerState BasicSampler : register(s0);
 
 // Defines the input to this pixel shader
 // - Should match the output of our corresponding vertex shader
@@ -31,6 +34,7 @@ struct VertexToPixel
 	float4 position		: SV_POSITION;
 	float3 normal		: NORMAL;
 	float3 worldPos		: POSITION;
+	float2 uv			: TEXCOORD;
 };
 
 
@@ -40,14 +44,16 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
+	//return float4(input.uv,0,1);
 	input.normal = normalize(input.normal);
-	float3 surfaceColor = float3(1, 1, 1);
 	float3 dirToCamera = normalize(input.normal - input.worldPos);
 
 	
 	///DIRECTIONAL LIGHT--------------------------------------------------------
 	float3 tmpLightDir = normalize(-directionalLight.direction);
 
+	//Texture Sampling
+	float4 surfaceColor = DiffuseTexture.Sample(BasicSampler, input.uv);
 
 	// N dot L (Lambert / Diffuse) lighting
 	// Note: We need the direction TO the light
@@ -72,6 +78,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Specular calc for reflections (Phong)
 	float3 pointRefl = reflect(-dirToPointLight, input.normal);
 	float pointSpec = pow(saturate(dot(pointRefl, dirToCamera)), shininess);
+
+
+
+	
 
 	// Combine the surface and lighting
 	float3 finalPointLight =

@@ -2,9 +2,10 @@
 
 
 
-Material::Material(SimpleVertexShader *& vShader, SimplePixelShader *& pShader)
-	:vertexShader(vShader),pixelShader(pShader),shininess(70.0f)
+Material::Material(SimpleVertexShader *& vShader, SimplePixelShader *& pShader, Texture*& intexture, Sampler*& insample)
+	:vertexShader(vShader),pixelShader(pShader),texture(intexture),sampler(insample),shininess(70.0f)
 {
+
 }
 
 SimpleVertexShader *& Material::GetVertexShader()
@@ -17,8 +18,20 @@ SimplePixelShader *& Material::GetPixelShader()
 	return pixelShader;
 }
 
+Texture *& Material::GetTexture()
+{
+	return texture;
+}
+
+Sampler *& Material::GetSampler()
+{
+	return sampler;
+}
+
 Material::~Material()
 {
-	delete vertexShader;
-	delete pixelShader;
+	if(vertexShader)
+		delete vertexShader;
+	if(pixelShader)
+		delete pixelShader;
 }
