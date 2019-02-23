@@ -65,7 +65,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float dirSpec = pow(saturate(dot(dirRefl, dirToCamera)), shininess);
 
 	// Combine the surface and lighting
-	float3 finalDirLight = surfaceColor * directionalLight.diffuseColor.rgb * dirNdotL
+	float3 finalDirLight = surfaceColor.rgb * directionalLight.diffuseColor.rgb * dirNdotL
 		+ directionalLight.ambientColor.rgb+ dirSpec.rrr;
 
 	///PointLight------------------------------------------------------------------
@@ -85,7 +85,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Combine the surface and lighting
 	float3 finalPointLight =
-		surfaceColor * pointLight.color.rgb  * pointNdotL  + pointSpec.rrr; // Making the spec value into a float3
+		surfaceColor.rgb * pointLight.color.rgb  * pointNdotL  + pointSpec.rrr; // Making the spec value into a float3
 
 	return float4(finalDirLight+finalPointLight,1);
 }

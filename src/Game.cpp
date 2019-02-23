@@ -323,8 +323,13 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 // --------------------------------------------------------
 void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-	// Add any custom code here...
- 
+	// Add any custom code here..
+	if (buttonState & 0x0001)
+	{
+		long x_diff = x - prevMousePos.x;
+		long y_diff = y - prevMousePos.y;
+		camera.MouseControl(x_diff, y_diff);
+	}
 	// Save the previous mouse position, so we have it for the future
 	prevMousePos.x = x;
 	prevMousePos.y = y;
