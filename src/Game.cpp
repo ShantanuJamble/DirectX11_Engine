@@ -5,7 +5,7 @@
 #include "Material.h"
 #include "FileHandler.h"
 #include "Texture.h"
-
+#include "Lights.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -67,31 +67,33 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	
 
-	//Updating lighting
-	directionalLight = {
-				XMFLOAT4(0.1f , 0.1f, 0.1f ,1.0f),
-				XMFLOAT4(1,1,1,1),
-				XMFLOAT3(-1,0,0)
+	//Updating Direct lighting
+	light[0].Type = LIGHT_TYPE_DIRECTIONAL;
+	light[0].Direction = XMFLOAT3(-1,-1, 0);
+	light[0].Color = XMFLOAT3(0.8f, 0.8f, 0.8f);
+	light[0].Intensity = 1.0f;
 
-			};
-
-	pointLight = {
-				XMFLOAT4(1,1,1,1),
-				XMFLOAT3(0,3,0)
-	};
-
+	light[1].Type = LIGHT_TYPE_SPOT;
+	light[1].Position = XMFLOAT3(0, 0.25f, 24);
+	light[1].Direction = XMFLOAT3(0, 1, 0);
+	light[1].Color = XMFLOAT3(1, 0, 0);
+	light[1].Range = 40.0f;
+	light[1].Intensity = 10.0f;
+	light[1].SpotFalloff = 25.0f;
+	
 	//Creating multiple textures
-	Texture * sampleTextureStone= new Texture(L"Textures/stone.png", device, context);
-	Texture * sampleTextureWall= new Texture(L"Textures/wall.png", device, context);
+	Texture * sampleTextureStone= new Texture(L"Textures/floor_albedo.png", device, context);
+	Texture * roughNessTexture = new Texture(L"Textures/floor_roughness.png", device, context);
+
 	textures.push_back(sampleTextureStone);
-	textures.push_back(sampleTextureWall);
+	textures.push_back(roughNessTexture);
 	D3D11_SAMPLER_DESC sampDesc = {}; // " = {}" fills the whole struct with zeros!
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;			// This will ensure mip maps are used!
-	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR ;		//D3D11_FILTER_ANISOTROPIC;	// Tri-linear filtering
-	//sampDesc.MaxAnisotropy = 16; // Must  be set for anisotropic filtering
+	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;	// Tri-linear filtering
+	sampDesc.MaxAnisotropy = 16; // Must  be set for anisotropic filtering
 	
 	//TODO::Here we will ask material class to create Sampler with the above desc.
 	sampler = new Sampler(sampDesc, device, context);
@@ -117,7 +119,7 @@ void Game::LoadShaders()
 	SimplePixelShader * tpixelShader = new SimplePixelShader(device, context);
 	tpixelShader->LoadShaderFile(L"PixelShader.cso");
 
-	material = new Material(tvertexShader, tpixelShader,textures[0],sampler);
+	material = new Material(tvertexShader, tpixelShader,textures[0],textures[1],sampler);
 	
 }
 
@@ -135,11 +137,12 @@ void Game::CreateBasicGeometry()
 	
 	std::string pathToAssets = FileHandler::getCWD();
 	pathToAssets.append("\\..\\..\\..\\assets\\models\\");
-	std::string pathToHelix = pathToAssets.append("helix.obj");
-	Mesh * cubeMesh = new Mesh(pathToHelix.c_str(),device);
+	std::string pathToHelix = pathToAssets.append("sphere.obj");
+	Mesh * cubeMesh = new Mesh(pathToHelix.c_str(), device);
 	meshes.push_back(cubeMesh);
 	
 	GameObject * cubeObject= new GameObject(cubeMesh,material, XMFLOAT3(0,0,1), XMFLOAT3(0,0,0),5.0f);
+	cubeObject->Scale(2, 2, 2);
 	gameObjects.push_back(cubeObject);
 
 
@@ -177,7 +180,7 @@ void Game::Update(float deltaTime, float totalTime)
 	for (int index = 0;index<gameObjects.size();index++)
 	{
 		gameObjects[index]->Rotate(0, curAngle, 0);
-		gameObjects[index]->Translate(sin(totalTime) * 2, 0, 0);
+		//gameObjects[index]->Translate(sin(totalTime) * 2, 0, 0);
 
 	}
 }
@@ -210,12 +213,14 @@ void Game::Draw(float deltaTime, float totalTime)
 	Material *objectMaterial;
 	SimpleVertexShader* objectVertexShader;
 	SimplePixelShader* objectPixelShader;
-	Texture* objectTexture;
+	Texture* objectalbedoTexture;
+	Texture* objectroughnessTexture;
 	Sampler* objectSampler;
 	for(auto gameObject:gameObjects)
 	{
 		objectMaterial = gameObject->GetMaterial();
-		objectTexture = objectMaterial->GetTexture();
+		objectalbedoTexture = objectMaterial->GetalbedoTexture();
+		objectroughnessTexture = objectMaterial->GetroughenssTexture();
 		objectSampler = objectMaterial->GetSampler();
 		objectVertexShader = objectMaterial->GetVertexShader();
 		objectPixelShader = objectMaterial->GetPixelShader();
@@ -225,11 +230,13 @@ void Game::Draw(float deltaTime, float totalTime)
 		objectVertexShader->SetMatrix4x4("view", viewMatrix);
 		objectVertexShader->SetMatrix4x4("projection", projectionMatrix);
 		
-		objectPixelShader->SetData("directionalLight", &directionalLight, sizeof(DirectionalLight));
+		
 		objectPixelShader->SetFloat("shininess", objectMaterial->GetShinniness());
-		objectPixelShader->SetFloat3("CameraPosition", XMFLOAT3(0, 0, -5));
+		objectPixelShader->SetFloat3("CameraPosition", camera.GetPosition());
 		objectPixelShader->SetFloat("shinniness", objectMaterial->GetShinniness());
-		objectPixelShader->SetData("pointLight", &pointLight, sizeof(PointLight));
+		std::cout << objectPixelShader->SetData("lights", (void*)(&light), sizeof(Light) * 10) << std::endl;;
+		std::cout << objectPixelShader->SetInt("numberOfLights", lightCount) << std::endl;
+		
 		// Once you've set all of the data you care to change for
 		// the next draw call, you need to actually send it to the GPU
 		//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
@@ -238,7 +245,8 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Set texture-related resources
 		objectPixelShader->SetSamplerState("BasicSampler", objectSampler->GetSamplerState());
-		objectPixelShader->SetShaderResourceView("DiffuseTexture",objectTexture->GetTextureSRV());
+		objectPixelShader->SetShaderResourceView("DiffuseTexture",objectalbedoTexture->GetTextureSRV());
+		objectPixelShader->SetShaderResourceView("RoughnessTexture",objectroughnessTexture->GetTextureSRV());
 		//pixelShader->SetShaderResourceView("SpecularMap", specSRV);
 
 		// Set the vertex and pixel shaders to use for the next Draw() command

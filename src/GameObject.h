@@ -45,7 +45,11 @@ public:
 	void MoveLeft(float const & deltaTime);
 	void MoveUp(float const & deltaTime);
 	void MoveDown(float const & deltaTime);
-	const DirectX::XMVECTOR & GetPosition() { return position; }
+	const DirectX::XMFLOAT3  GetPosition() { 
+		DirectX::XMFLOAT3 tmpposition;
+		DirectX::XMStoreFloat3(&tmpposition, position);
+		return tmpposition;
+	}
 
 	//Material managing methods
 	void SetMaterial(Material *& material);

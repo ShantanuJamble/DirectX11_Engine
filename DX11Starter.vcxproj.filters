@@ -16,6 +16,7 @@
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
+    <None Include="shaders\Lighting.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DXCore.cpp">

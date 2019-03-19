@@ -66,9 +66,8 @@ private:
 	std::vector<Texture *> textures;
 	Sampler * sampler;
 	//Lighting
-	DirectionalLight directionalLight;
-	PointLight pointLight;
-
+	Light light[10];
+	int lightCount = 10;
 	//Toggling between objects
 	int currentObj;
 };

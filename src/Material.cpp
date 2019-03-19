@@ -2,8 +2,8 @@
 
 
 
-Material::Material(SimpleVertexShader *& vShader, SimplePixelShader *& pShader, Texture*& intexture, Sampler*& insample)
-	:vertexShader(vShader),pixelShader(pShader),texture(intexture),sampler(insample),shininess(70.0f)
+Material::Material(SimpleVertexShader *& vShader, SimplePixelShader *& pShader, Texture*& inalbedotexture,Texture*& inroughnesstexture, Sampler*& insample)
+	:vertexShader(vShader),pixelShader(pShader),albedotexture(inalbedotexture),roughnesstexture(inroughnesstexture), sampler(insample),shininess(70.0f)
 {
 
 }
@@ -18,9 +18,9 @@ SimplePixelShader *& Material::GetPixelShader()
 	return pixelShader;
 }
 
-Texture *& Material::GetTexture()
+Texture *& Material::GetalbedoTexture()
 {
-	return texture;
+	return albedotexture;
 }
 
 Sampler *& Material::GetSampler()

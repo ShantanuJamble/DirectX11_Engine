@@ -9,14 +9,16 @@ class Material
 private:
 	SimpleVertexShader * vertexShader;
 	SimplePixelShader * pixelShader;
-	Texture * texture;
+	Texture * albedotexture;
+	Texture * roughnesstexture;
 	Sampler * sampler;
 	float shininess;
 public:
-	Material(SimpleVertexShader* & vertexShader, SimplePixelShader* & pixelShader, Texture*& texutre, Sampler *& sampDesc);
+	Material(SimpleVertexShader* & vertexShader, SimplePixelShader* & pixelShader, Texture*& albedotexutre, Texture*& roughnesstexutre, Sampler *& sampDesc);
 	SimpleVertexShader* & GetVertexShader();
 	SimplePixelShader* & GetPixelShader();
-	Texture*& GetTexture();
+	Texture*& GetalbedoTexture();
+	Texture*& GetroughenssTexture() { return roughnesstexture; }
 	Sampler*& GetSampler();
 	void SetShinniness(const float & shine)
 	{
