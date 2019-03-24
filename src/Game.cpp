@@ -10,6 +10,14 @@
 // For the DirectX Math library
 using namespace DirectX;
 
+float RandomRange(int min, int max)
+{
+	int range = max - min + 1;
+
+	return rand() % range + min;
+
+}
+
 // --------------------------------------------------------
 // Constructor
 //
@@ -73,14 +81,23 @@ void Game::Init()
 	light[0].Color = XMFLOAT3(0.8f, 0.8f, 0.8f);
 	light[0].Intensity = 1.0f;
 
-	light[1].Type = LIGHT_TYPE_SPOT;
+	light[1].Type = LIGHT_TYPE_POINT;
 	light[1].Position = XMFLOAT3(0, 0.25f, 24);
-	light[1].Direction = XMFLOAT3(0, 1, 0);
+	light[1].Direction = XMFLOAT3(1, 1, 0);
+	light[1].Range = RandomRange(5.0f, 10.0f);
 	light[1].Color = XMFLOAT3(1, 0, 0);
-	light[1].Range = 40.0f;
-	light[1].Intensity = 10.0f;
-	light[1].SpotFalloff = 25.0f;
+	light[1].Intensity = RandomRange(0.1f, 3.0f);
 	
+	Light spot = {};
+	light[2].Type = LIGHT_TYPE_SPOT;
+	light[2].Position = camera.GetPosition();
+	light[2].Direction = XMFLOAT3(1, 0, 0);
+	light[2].Color = XMFLOAT3(1, 1, 1);
+	light[2].Range = 40.0f;
+	light[2].Intensity = 10.0f;
+	light[2].SpotFalloff = 25.0f;
+
+
 	//Creating multiple textures
 	Texture * sampleTextureStone= new Texture(L"Textures/floor_albedo.png", device, context);
 	Texture * roughNessTexture = new Texture(L"Textures/floor_roughness.png", device, context);

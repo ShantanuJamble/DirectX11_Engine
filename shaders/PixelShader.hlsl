@@ -6,9 +6,10 @@
 cbuffer externalData : register(b0)
 {
 	Light lights[10];
-	int numberOfLights;
-	float shininess;
 	float3 cameraPos;
+	float shininess;
+	int numberOfLights;
+	int padding;
 }
 
 //Texture and sampler buffers
@@ -35,31 +36,20 @@ float4 main(VertexToPixel input) : SV_TARGET
 	//   of the triangle we're rendering
 	//return float4(lights[0].Color,1);
 	input.normal = normalize(input.normal);
-	float3 dirToCamera = normalize(input.normal - input.worldPos);
-
+	
 	//Texture Sampling
 	float4 surfaceColor = DiffuseTexture.Sample(BasicSampler, input.uv);
 	
 	float roughness = RoughnessTexture.Sample(BasicSampler, input.uv).r;
 	roughness = lerp(0, roughness, 1);// x*(1-s) + y*s lerp(x,y,s)
 
-	/////DIRECTIONAL LIGHT--------------------------------------------------------
-	float3 tmpLightDir = normalize(-lights[0].Direction);
+	///// LIGHT--------------------------------------------------------
 	
-
-
-	
-
-	
-	
-	//// Combine the surface and lighting
-	/*float3 finalDirLight = surfaceColor.rgb * directionalLight.diffuseColor.rgb * dirNdotL
-		+ directionalLight.Color.rgb + dirSpec.rrr;
-*/
-	
-
-	float4 FinalDirectLight = BasicDirectLight(input.normal, tmpLightDir, dirToCamera, lights[0],surfaceColor, shininess, roughness);
-	return FinalDirectLight;
+	float3 FinalDirectLight = BasicDirectLight(input.normal, lights[0], cameraPos,input.worldPos, surfaceColor, shininess, roughness);
+	float3 FinalPointLight = BasicDirectLight(input.normal, lights[1], cameraPos,input.worldPos, surfaceColor, shininess, roughness);
+	float3 FinalSpotLight = BasicSpotLight(input.normal, lights[2], cameraPos,input.worldPos, surfaceColor, shininess, roughness);
+	return float4((FinalSpotLight).rgb,1);
+	//return float4((FinalSpotLight).rgb,1);
 
 	/////PointLight------------------------------------------------------------------
 	//// Direction TO the point light from the surface
@@ -67,10 +57,6 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	//float3 pointNdotL = dot(input.normal, dirToPointLight);
 	//pointNdotL = saturate(pointNdotL); // Remember to CLAMP between 0 and 1
-
-	//// Specular calc for reflections (Phong)
-	//float3 pointRefl = reflect(-dirToPointLight, input.normal);
-	//float pointSpec = pow(saturate(dot(pointRefl, dirToCamera)), shininess);
 
 
 	//// Combine the surface and lighting

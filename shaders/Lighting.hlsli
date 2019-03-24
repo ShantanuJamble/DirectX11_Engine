@@ -21,6 +21,22 @@ struct Light
 };
 
 
+//------------Utility functions by Prof. Cascioli------
+
+// Range-based attenuation function
+float Attenuate(Light light, float3 worldPos)
+{
+	float dist = distance(light.Position, worldPos);
+
+	// Ranged-based attenuation
+	float att = saturate(1.0f - (dist * dist / (light.Range * light.Range)));
+
+	// Soft falloff
+	return att * att;
+}
+
+///------------------------------------------------------------------
+
 //Diffuse Light with Lambart
 float Diffuse(float3 normal, float3 dirToLight)
 {
@@ -36,12 +52,46 @@ float SpecularLight(float3 lightDirection,float3 normal,float3 dirToCamera,float
 
 //Basic Lighiting
 
-float4 BasicDirectLight(float3 normal, float3 lightDir, float3 dirToCamera, Light light, float4 surfaceColor,float shininess, float roughness)
+float3 BasicDirectLight(float3 normal, Light light, float3 cameraPos, float3 worldPos, float4 surfaceColor,float shininess, float roughness)
 {
-	float dirNdotL = Diffuse(normal, lightDir);
-	float dirSpec = SpecularLight(light.Direction, normal, dirToCamera, shininess);
-	dirSpec *= (1.0f - roughness);
-	return (dirNdotL*surfaceColor + dirSpec)*float4(light.Color, 1)*light.Intensity;
+	float3 dirToCamera = normalize(cameraPos - worldPos);
+	float3 dirToLight = normalize(-light.Direction);
+
+	float diff = Diffuse(normal, dirToLight);
+	float spec = SpecularLight(dirToLight, normal, dirToCamera, shininess);
+	spec *= (1.0f - roughness);
+	return (diff*surfaceColor.rgb + spec)*light.Color.rgb*light.Intensity;
+}
+
+float3 BasicPointLight(float3 normal, Light light, float3 cameraPos, float3 worldPos, float4 surfaceColor, float shininess, float roughness)
+{
+	float3 dirToCamera = normalize(cameraPos - worldPos);
+	float3 dirToLight = normalize(light.Position - worldPos);
+
+	float attn = Attenuate(light, worldPos);
+	float diff = Diffuse(normal, dirToLight);
+	float spec = SpecularLight(dirToLight, normal, dirToCamera, shininess);
+	spec *= (1.0f - roughness);
+
+	return (diff * surfaceColor.rgb + spec) * attn * light.Intensity * light.Color.rgb;
+
+ }
+
+
+float3 BasicSpotLight(float3 normal, Light light, float3 cameraPos, float3 worldPos, float4 surfaceColor, float shininess, float roughness)
+{
+	float3 dirToLight = normalize(light.Position - worldPos);
+	float3 dirToCamera = normalize(cameraPos - worldPos);
+	float cosineSourcePixel = dot(-dirToLight, light.Direction);
+
+	
+		float penumbra = pow(saturate(dot(-dirToLight, light.Direction)), light.SpotFalloff);
+		float attn = Attenuate(light, worldPos);
+		float diff = Diffuse(normal, dirToLight);
+		float spec = SpecularLight(dirToLight, normal, dirToCamera, shininess);
+		spec *= (1.0f - roughness);
+
+		return (diff * surfaceColor.rgb + spec) * attn * light.Intensity * light.Color.rgb * penumbra;
 }
 
 #endif
